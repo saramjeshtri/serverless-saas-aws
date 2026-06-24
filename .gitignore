@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.zip
+response.json
+.env
+.DS_Store
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
