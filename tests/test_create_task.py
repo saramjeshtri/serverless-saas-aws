@@ -1,5 +1,4 @@
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 import sys
 import os
@@ -8,20 +7,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'functions'))
 
 from create_task import lambda_handler
 
-@patch('create_task.dynamodb')
-def test_create_task_success(mock_dynamodb):
-    # Setup fake table
+@patch('create_task.boto3')
+def test_create_task_success(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
-    # Fake event
     event = {
         'body': json.dumps({'title': 'Test task', 'description': 'Test'}),
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)
@@ -32,18 +25,14 @@ def test_create_task_success(mock_dynamodb):
     assert body['user_id'] == 'user-123'
     assert 'task_id' in body
 
-@patch('create_task.dynamodb')
-def test_create_task_missing_title(mock_dynamodb):
+@patch('create_task.boto3')
+def test_create_task_missing_title(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     event = {
         'body': json.dumps({'description': 'No title here'}),
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)

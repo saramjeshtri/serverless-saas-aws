@@ -2,10 +2,9 @@ import json
 import os
 import boto3
 
-dynamodb = boto3.resource('dynamodb')
-
 def lambda_handler(event, context):
     try:
+        dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table(os.environ.get('TABLE_NAME', 'tasks'))
 
         user_id = event['requestContext']['authorizer']['claims']['sub']
@@ -14,7 +13,6 @@ def lambda_handler(event, context):
         if not task_id:
             raise ValueError("task_id is required")
 
-        # First fetch the task to verify ownership
         result = table.get_item(Key={'task_id': task_id})
         task = result.get('Item')
 

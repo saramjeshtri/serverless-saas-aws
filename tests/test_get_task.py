@@ -1,5 +1,4 @@
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 import sys
 import os
@@ -8,10 +7,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'functions'))
 
 from get_task import lambda_handler
 
-@patch('get_task.dynamodb')
-def test_get_task_success(mock_dynamodb):
+@patch('get_task.boto3')
+def test_get_task_success(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     mock_table.get_item.return_value = {
         'Item': {
@@ -24,11 +23,7 @@ def test_get_task_success(mock_dynamodb):
 
     event = {
         'pathParameters': {'task_id': 'abc-123'},
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)
@@ -37,30 +32,26 @@ def test_get_task_success(mock_dynamodb):
     body = json.loads(result['body'])
     assert body['task_id'] == 'abc-123'
 
-@patch('get_task.dynamodb')
-def test_get_task_not_found(mock_dynamodb):
+@patch('get_task.boto3')
+def test_get_task_not_found(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     mock_table.get_item.return_value = {}
 
     event = {
         'pathParameters': {'task_id': 'fake-id'},
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)
 
     assert result['statusCode'] == 404
 
-@patch('get_task.dynamodb')
-def test_get_task_wrong_user(mock_dynamodb):
+@patch('get_task.boto3')
+def test_get_task_wrong_user(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     mock_table.get_item.return_value = {
         'Item': {
@@ -73,11 +64,7 @@ def test_get_task_wrong_user(mock_dynamodb):
 
     event = {
         'pathParameters': {'task_id': 'abc-123'},
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)

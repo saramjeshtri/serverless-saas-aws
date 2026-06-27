@@ -1,5 +1,4 @@
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 import sys
 import os
@@ -8,10 +7,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'functions'))
 
 from get_tasks import lambda_handler
 
-@patch('get_tasks.dynamodb')
-def test_get_tasks_returns_user_tasks(mock_dynamodb):
+@patch('get_tasks.boto3')
+def test_get_tasks_returns_user_tasks(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     mock_table.scan.return_value = {
         'Items': [
@@ -21,11 +20,7 @@ def test_get_tasks_returns_user_tasks(mock_dynamodb):
     }
 
     event = {
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)
@@ -34,19 +29,15 @@ def test_get_tasks_returns_user_tasks(mock_dynamodb):
     body = json.loads(result['body'])
     assert len(body) == 2
 
-@patch('get_tasks.dynamodb')
-def test_get_tasks_empty(mock_dynamodb):
+@patch('get_tasks.boto3')
+def test_get_tasks_empty(mock_boto3):
     mock_table = MagicMock()
-    mock_dynamodb.Table.return_value = mock_table
+    mock_boto3.resource.return_value.Table.return_value = mock_table
 
     mock_table.scan.return_value = {'Items': []}
 
     event = {
-        'requestContext': {
-            'authorizer': {
-                'claims': {'sub': 'user-123'}
-            }
-        }
+        'requestContext': {'authorizer': {'claims': {'sub': 'user-123'}}}
     }
 
     result = lambda_handler(event, None)
