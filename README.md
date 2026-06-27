@@ -22,6 +22,12 @@ Serverless task management API on AWS. Users authenticate via Cognito and can on
 
 All endpoints require a valid Cognito JWT token in the `Authorization` header.
 
+## Live API
+
+Base URL: `https://lliax9894k.execute-api.us-east-1.amazonaws.com/dev`
+
+To test the API you need a Cognito token. Register and login using the Authentication section below, then use the token in the Usage examples.
+
 ## Deploy
 
 ```bash
